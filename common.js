@@ -8,16 +8,16 @@ const CONFIG={
 /* Demo products, used only when SHEET_API_URL is empty or fails. Sheet columns: id, name, price, mrp, image, category, description, Recommended */
 const U=id=>`https://images.unsplash.com/${id}?auto=format&fit=crop&w=800&q=70`;
 const DEMO=[
-['Ashwagandha Root Capsules',549,699,'photo-1471193945509-9ad0617afabf','Wellness','Whole-root ashwagandha in easy capsules.','yes'],
-['Tulsi Ginger Herbal Tea',299,0,'photo-1544787219-7f47ccb76574','Teas','Holy basil, ginger and cardamom, blended in small batches.','yes'],
-['Kumkumadi Face Oil',1299,1599,'photo-1608571423902-eed4a5ad8108','Skin & Hair','Saffron and sandalwood in a light facial oil.','yes'],
-['Triphala Churna',249,0,'photo-1515023115689-589c33041d3c','Wellness','Amalaki, bibhitaki and haritaki, stone-ground.',''],
-['Classic Chyawanprash',449,520,'photo-1505576399279-565b52d4ac71','Wellness','Amla-based herbal jam made to the classical recipe.','yes'],
-['Bhringraj Hair Oil',379,0,'photo-1526947425960-945c6e72858f','Skin & Hair','Slow-infused bhringraj and coconut oil.',''],
-['Neem & Turmeric Soap',159,0,'photo-1600857062241-98e5dba7f214','Skin & Hair','Cold-process bar with neem and turmeric.',''],
-['Sesame Abhyanga Oil',699,849,'photo-1590779033100-9f60a05a013d','Oils','Herb-infused sesame oil for daily self-massage.','']
+['Rootora.1 Hair Oil',449,549,'photo-1526947425960-945c6e72858f','Hair Care','Herb-infused hair oil for scalp massage and daily nourishment.','yes'],
+['Rootora.1 Soap',149,0,'photo-1600857062241-98e5dba7f214','Soaps','Gentle handmade bar for everyday body care.','yes'],
+['Bhringraj Hair Oil',379,0,'photo-1526947425960-945c6e72858f','Hair Care','Slow-infused bhringraj and coconut oil.','yes'],
+['Neem & Turmeric Soap',159,0,'photo-1600857062241-98e5dba7f214','Soaps','Cold-process bar with neem and turmeric.',''],
+['Kumkumadi Face Oil',1299,1599,'photo-1608571423902-eed4a5ad8108','Skin Care','Saffron and sandalwood in a light facial oil.','yes'],
+['Amla Shikakai Hair Oil',329,399,'photo-1526947425960-945c6e72858f','Hair Care','Amla and shikakai infused in coconut oil for stronger-looking hair.',''],
+['Hibiscus Coconut Soap',139,0,'photo-1600857062241-98e5dba7f214','Soaps','Hibiscus and coconut oil in a soft, creamy bar.',''],
+['Sesame Body Massage Oil',699,849,'photo-1590779033100-9f60a05a013d','Skin Care','Herb-infused sesame oil for daily self-massage.','']
 ].map(r=>({id:r[0],name:r[0],price:r[1],mrp:r[2],image:U(r[3]),category:r[4],description:r[5],Recommended:r[6]}));
-DEMO[1].availableSizes='25 bags, 50 bags';
+DEMO[0].availableSizes='100 ml, 200 ml';
 const HERO=U('photo-1515377905703-c4788e51af15'),HERO2=U('photo-1556228720-195a672e8a03');
 
 /* ================= HELPERS ================= */
@@ -78,16 +78,16 @@ function chrome(){
 <div class="acts"><button class="ib" id="searchBtn" type="button" aria-label="Search products" aria-expanded="false" aria-controls="sbar">${ic('search')}</button>
 <a class="ib" href="wishlist.html" aria-label="Wishlist">${ic('heart')}<b data-wc></b></a>
 <a class="ib" href="cart.html" aria-label="Cart">${ic('bag')}<b data-cc></b></a></div></div>
-<div class="sbar" id="sbar" hidden><div class="wrap"><form id="sform" role="search"><label class="sr" for="q">Search products</label><input id="q" type="search" placeholder="Search herbs, oils, teas" autocomplete="off"><button class="btn" type="submit">Search</button></form></div></div></header>
+<div class="sbar" id="sbar" hidden><div class="wrap"><form id="sform" role="search"><label class="sr" for="q">Search products</label><input id="q" type="search" placeholder="Search hair oils, soaps, skin care" autocomplete="off"><button class="btn" type="submit">Search</button></form></div></div></header>
 <div class="scrim" id="scrim" hidden></div>
 <aside class="mnav" id="mnav" aria-label="Menu"><div class="mnav-h"><a class="logo" href="index.html">${B}</a><button class="ib" id="menuClose" type="button" aria-label="Close menu">${ic('x')}</button></div>${ml}<div class="mnav-f"><p>${esc(CONFIG.EMAIL)}<br>${esc(CONFIG.PHONE)}</p></div></aside>`);
   document.body.insertAdjacentHTML('beforeend',`<footer class="foot"><div class="wrap fgrid">
-<div><a class="logo" href="index.html">${B}</a><p>Herbs, oils and teas, made in small batches and packed in glass and paper.</p></div>
+<div><a class="logo" href="index.html">${B}</a><p>Hair oils, soaps and beauty care, made in small batches and packed in glass and paper.</p></div>
 <div><h4>Shop</h4><a href="index.html#shop">All products</a><a href="wishlist.html">Wishlist</a><a href="cart.html">Cart</a></div>
 <div><h4>Company</h4><a href="about.html">About us</a><a href="contact.html">Contact us</a><a href="index.html">Home</a></div>
 <div><h4>Reach us</h4><a href="mailto:${esc(CONFIG.EMAIL)}">${esc(CONFIG.EMAIL)}</a><a href="tel:${esc(CONFIG.PHONE.replace(/\s/g,''))}">${esc(CONFIG.PHONE)}</a><p style="margin-top:6px">${esc(CONFIG.ADDRESS)}</p></div></div>
 <div class="fbig" aria-hidden="true"><span>${B}</span></div>
-<p class="wrap copy">© ${new Date().getFullYear()} ${B}. Traditional wellness products; not intended to diagnose, treat or cure any disease. <a class="adm" href="admin.html" aria-label="Admin sign in">${ic('lock')}</a></p></footer>`);
+<p class="wrap copy">© ${new Date().getFullYear()} ${B}. Cosmetic products for external use only. Please do a patch test before first use. <a class="adm" href="admin.html" aria-label="Admin sign in">${ic('lock')}</a></p></footer>`);
   document.body.insertAdjacentHTML('beforeend',`<a class="wa-float" href="https://wa.me/${CONFIG.WHATSAPP.replace(/\D/g,'')}?text=${encodeURIComponent('Hello '+CONFIG.BRAND+', I have a question.')}" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16.04 3C9.4 3 4 8.4 4 15.03c0 2.12.55 4.19 1.6 6.01L4 29l8.14-1.56a12.02 12.02 0 0 0 3.9.65h.01C22.68 28.09 28 22.69 28 16.06 28 9.4 22.68 3 16.04 3zm0 22.04h-.01c-1.2 0-2.37-.32-3.4-.93l-.24-.15-4.83.93.98-4.7-.16-.25a9.97 9.97 0 0 1-1.54-5.3c0-5.5 4.5-9.98 10.03-9.98 5.52 0 10.01 4.48 10.01 9.99 0 5.5-4.5 10.39-10.84 10.39zm5.5-7.46c-.3-.15-1.78-.88-2.05-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.95 1.18-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.14-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.49-.5-.68-.51h-.58c-.2 0-.53.08-.8.38-.28.3-1.05 1.02-1.05 2.5s1.08 2.9 1.23 3.1c.15.2 2.12 3.23 5.13 4.53.72.31 1.28.5 1.71.63.72.23 1.37.2 1.89.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.08-.12-.28-.2-.58-.35z"/></svg></a>`);
   $$('[data-free]').forEach(e=>e.textContent=inr(CONFIG.FREE_SHIP_ABOVE));
   hydrateIcons();menuInit();searchInit();badges();railInit();fitBrand();
@@ -158,7 +158,7 @@ function parseDesc(raw){
   return{intro,feats}}
 function fmtDesc(raw){
   const {intro,feats}=parseDesc(raw);
-  if(!intro.length&&!feats.length)return{html:'<p class="lede">Traditional herbal product.</p>',long:false};
+  if(!intro.length&&!feats.length)return{html:'<p class="lede">Handmade beauty care product.</p>',long:false};
   const fh=feats.map(f=>`<li><div>${f.t&&f.d?`<b>${esc(f.t)}</b><span>${esc(f.d)}</span>`:`<span style="color:var(--ink)">${esc(f.t||f.d)}</span>`}</div></li>`).join('');
   const html=intro.map((x,i)=>`<p${i?'':' class="lede"'}>${esc(x)}</p>`).join('')+(fh?`<ul class="mfeat">${fh}</ul>`:'');
   return{html,long:(intro.join(' ').length+feats.map(f=>f.t+f.d).join(' ').length)>380}}
@@ -172,7 +172,7 @@ function quick(p){let m=$('#modal');if(!m){m=document.createElement('div');m.id=
 <div class="mprice"><b>${inr(p.price)}</b>${p.mrp?`<s>${inr(p.mrp)}</s><small>${off}% off</small>`:''}</div>
 <div class="mdesc${d.long?' clip':''}" id="mDesc">${d.html}</div>${d.long?('<button class="more" type="button" id="mMore" aria-expanded="false">Read more'+ic('chevron-down')+'</button>'):''}
 ${p.sizes.length?`<p class="mlabel">Size</p><div class="sizes" role="group" aria-label="Size">${p.sizes.map((z,i)=>`<button type="button" class="chip" data-size="${esc(z)}" aria-pressed="${i===0}">${esc(z)}</button>`).join('')}</div>`:''}
-<div class="mperks"><div>${ic('truck')}Free delivery above ${inr(CONFIG.FREE_SHIP_ABOVE)}</div><div>${ic('mortar')}Made by traditional methods</div><div>${ic('box')}Glass and paper, plastic-light packing</div></div>
+<div class="mperks"><div>${ic('truck')}Free delivery above ${inr(CONFIG.FREE_SHIP_ABOVE)}</div><div>${ic('mortar')}Made in small batches</div><div>${ic('box')}Glass and paper, plastic-light packing</div></div>
 <a class="mask" target="_blank" rel="noopener" href="https://wa.me/${esc(CONFIG.WHATSAPP)}?text=${encodeURIComponent('Hello, I have a question about '+p.name)}">${ic('chat')}Have a question? Ask us on WhatsApp</a></div>
 <div class="mfoot"><div class="qty" role="group" aria-label="Quantity"><button type="button" data-q="-1" aria-label="Decrease quantity">−</button><span id="mQty" aria-live="polite">1</span><button type="button" data-q="1" aria-label="Increase quantity">+</button></div><button class="btn" type="button" id="mAdd">${ic('bag')}<span id="mAddT"></span></button></div></div></div>`;
   const sync=()=>{$('#mQty',m).textContent=qty;$('#mAddT',m).textContent='Add to cart · '+inr(p.price*qty)};sync();
@@ -221,7 +221,7 @@ async function initHome(){
 
 /* ================= CART PAGE ================= */
 function renderCart(){const box=$('#cartLines');if(!box)return;const c=getCart();
-  if(!c.length){box.innerHTML='<div class="empty"><h3>Your cart is empty</h3><p>Browse the herbal shelf and add what you need.</p><a class="btn" href="index.html#shop">Continue shopping</a></div>';$('#sum').hidden=true;return}
+  if(!c.length){box.innerHTML='<div class="empty"><h3>Your cart is empty</h3><p>Browse our hair oils, soaps and skin care and add what you need.</p><a class="btn" href="index.html#shop">Continue shopping</a></div>';$('#sum').hidden=true;return}
   $('#sum').hidden=false;let sub=0;
   box.innerHTML='<div class="lines">'+c.map(i=>{const t=i.price*i.qty;sub+=t;return `<div class="line"><div class="pimg"><img src="${esc(i.image)}" alt="${esc(i.name)}" onerror="this.classList.add('bad')"></div><div><h3>${esc(i.name)}${i.size?` <small style="font:400 .85rem var(--bf);color:var(--mute)">(${esc(i.size)})</small>`:''}</h3><span class="price" style="font-size:.98rem">${inr(i.price)}</span><div class="qrow"><div class="qty"><button type="button" data-dec="${esc(i.key)}" aria-label="Decrease quantity of ${esc(i.name)}">−</button><span>${i.qty}</span><button type="button" data-inc="${esc(i.key)}" aria-label="Increase quantity of ${esc(i.name)}">+</button></div><button class="rm" type="button" data-rm="${esc(i.key)}">Remove</button></div></div><div class="sub">${inr(t)}</div></div>`}).join('')+'</div>';
   const ship=sub>=CONFIG.FREE_SHIP_ABOVE?0:CONFIG.SHIPPING,left=CONFIG.FREE_SHIP_ABOVE-sub;
