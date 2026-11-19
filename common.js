@@ -45,6 +45,11 @@ phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 
 pin:'<path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
 check:'<path d="m5 12 5 5 9-10"/>',
 lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+'check-circle':'<circle cx="12" cy="12" r="9"/><path d="m8 12.5 3 3 5-6"/>',
+'check-square':'<rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="m8 12.5 3 3 5-6"/>',
+card:'<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6 15h4"/>',
+minus:'<path d="M5 12h14"/>',
+'chevron-left':'<path d="m15 6-6 6 6 6"/>','chevron-right':'<path d="m9 6 6 6-6 6"/>',
 chat:'<path d="M3 21l1.6-4.8A8.5 8.5 0 1 1 8 19.6L3 21z"/><path d="M9 9.5c.5 2.5 2.5 4.5 5 5l1.2-1.2-2-1-.8.8c-1-.4-1.8-1.2-2.2-2.2l.8-.8-1-2L9 9.5z"/>'
 };
 const ic=n=>`<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||''}</svg>`;
@@ -58,7 +63,7 @@ const REG={};  /* id -> product, so buttons only need the id */
 function norm(r){const price=+String(r.price??0).replace(/[^\d.]/g,'')||0,mrp=+String(r.mrp??r.was??0).replace(/[^\d.]/g,'')||0;
   const list=v=>String(v??'').split(/[\n|,]/).map(x=>x.trim()).filter(Boolean);
   const rec=String(r.Recommended??r.recommended??'').toLowerCase().trim(),image=String(r.image||'').trim();
-  const p={id:String(r.id||r.name),name:String(r.name||'Untitled'),price,mrp:mrp>price?mrp:0,image,images:[...new Set([image,...list(r.images)].filter(Boolean))],sizes:list(r.availableSizes),category:String(r.category||'Other').trim(),description:r.description||'',recommended:['yes','true','✅','y','1'].includes(rec)};
+  const p={id:String(r.id||r.name),name:String(r.name||'Untitled'),price,mrp:mrp>price?mrp:0,image,images:[...new Set([image,...list(r.images)].filter(Boolean))],sizes:list(r.availableSizes),category:String(r.category||'Other').trim(),description:r.description||'',recommended:['yes','true','✅','y','1'].includes(rec),benefits:String(r.benefits??r.Benefits??'').trim(),ingredients:String(r.ingredients??r.Ingredients??'').trim(),usage:String(r.usage??r.Usage??r.howToUse??'').trim()};
   REG[p.id]=p;return p}
 
 function toast(m){let t=$('#toast');if(!t){t=document.createElement('div');t.id='toast';t.className='toast';t.setAttribute('role','status');document.body.appendChild(t)}
@@ -66,43 +71,42 @@ function toast(m){let t=$('#toast');if(!t){t=document.createElement('div');t.id=
 
 /* ================= HEADER / MENU / FOOTER (injected on every page) ================= */
 const LINKS=[['index.html','Home','','home'],['index.html#shop','Shop','','shop'],['about.html','About','','about'],['contact.html','Contact','','contact']];
+const ANN=()=>[`Free delivery above ${inr(CONFIG.FREE_SHIP_ABOVE)}`,'Cash on delivery & UPI accepted','Questions? Ask us on WhatsApp'];
+const catHref=c=>'index.html?cat='+encodeURIComponent(c)+'#shop';
 function chrome(){
-  const cur=p=>PAGE===p?' aria-current="page"':'';
-  const dl=LINKS.map(l=>`<a href="${l[0]}"${cur(l[3])}>${l[1]}</a>`).join('');
-  const ml=LINKS.concat([['wishlist.html','Wishlist','','wishlist'],['cart.html','Cart','','cart']]).map((l,i)=>`<a class="ml" href="${l[0]}"${cur(l[3])}><small>0${i+1}</small>${l[1]}${ic('arrow-right')}</a>`).join('');
+  const cur=p=>PAGE===p||(p==='shop'&&PAGE==='product')?' aria-current="page"':'';
+  const cats=read('cats',[]);
+  const dl=LINKS.map(l=>l[3]==='shop'&&cats.length
+    ?`<div class="dd" id="dd"><button class="ddb" type="button" aria-haspopup="true" aria-expanded="false"${cur('shop')}>Shop${ic('chevron-down')}</button><div class="ddm"><a href="index.html#shop">All products</a>${cats.map(c=>`<a href="${catHref(c)}">${esc(c)}</a>`).join('')}</div></div>`
+    :`<a href="${l[0]}"${cur(l[3])}>${l[1]}</a>`).join('');
+  const ml=LINKS.concat([['wishlist.html','Wishlist','','wishlist'],['cart.html','Cart','','cart']]).map(l=>`<a class="ml" href="${l[0]}"${cur(l[3])}>${l[1]}${ic('arrow-right')}</a>`).join('');
   const B=esc(CONFIG.BRAND);
-  document.body.insertAdjacentHTML('afterbegin',`<div class="topbar">Free delivery above <span data-free></span> &nbsp;·&nbsp; Cash on delivery &amp; UPI</div>
+  document.body.insertAdjacentHTML('afterbegin',`<div class="ann" role="region" aria-label="Store announcements"><button type="button" data-ann="-1" aria-label="Previous announcement">${ic('chevron-left')}</button><p id="annT"></p><button type="button" data-ann="1" aria-label="Next announcement">${ic('chevron-right')}</button></div>
 <header class="hdr" id="hdr"><div class="wrap hdr-in">
-<div class="hl"><button class="ib menu-btn" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mnav">${ic('menu')}</button><nav class="dnav" aria-label="Main">${dl}</nav></div>
+<div class="hl"><button class="ib menu-btn" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mnav">${ic('menu')}</button><button class="ib" id="searchBtn" type="button" aria-label="Search products" aria-expanded="false" aria-controls="sbar">${ic('search')}</button></div>
 <a class="logo" href="index.html" aria-label="${B} home">${B}</a>
-<div class="acts"><button class="ib" id="searchBtn" type="button" aria-label="Search products" aria-expanded="false" aria-controls="sbar">${ic('search')}</button>
-<a class="ib" href="wishlist.html" aria-label="Wishlist">${ic('heart')}<b data-wc></b></a>
+<div class="acts"><a class="ib" href="wishlist.html" aria-label="Wishlist">${ic('heart')}<b data-wc></b></a>
 <a class="ib" href="cart.html" aria-label="Cart">${ic('bag')}<b data-cc></b></a></div></div>
+<nav class="dnav wrap" aria-label="Main">${dl}</nav>
 <div class="sbar" id="sbar" hidden><div class="wrap"><form id="sform" role="search"><label class="sr" for="q">Search products</label><input id="q" type="search" placeholder="Search hair oils, soaps, skin care" autocomplete="off"><button class="btn" type="submit">Search</button></form></div></div></header>
 <div class="scrim" id="scrim" hidden></div>
 <aside class="mnav" id="mnav" aria-label="Menu"><div class="mnav-h"><a class="logo" href="index.html">${B}</a><button class="ib" id="menuClose" type="button" aria-label="Close menu">${ic('x')}</button></div>${ml}<div class="mnav-f"><p>${esc(CONFIG.EMAIL)}<br>${esc(CONFIG.PHONE)}</p></div></aside>`);
   document.body.insertAdjacentHTML('beforeend',`<footer class="foot"><div class="wrap fgrid">
 <div><a class="logo" href="index.html">${B}</a><p>Hair oils, soaps and beauty care, made in small batches and packed in glass and paper.</p></div>
-<div><h4>Shop</h4><a href="index.html#shop">All products</a><a href="wishlist.html">Wishlist</a><a href="cart.html">Cart</a></div>
-<div><h4>Company</h4><a href="about.html">About us</a><a href="contact.html">Contact us</a><a href="index.html">Home</a></div>
-<div><h4>Reach us</h4><a href="mailto:${esc(CONFIG.EMAIL)}">${esc(CONFIG.EMAIL)}</a><a href="tel:${esc(CONFIG.PHONE.replace(/\s/g,''))}">${esc(CONFIG.PHONE)}</a><p style="margin-top:6px">${esc(CONFIG.ADDRESS)}</p></div></div>
-<div class="fbig" aria-hidden="true"><span>${B}</span></div>
+<div><h4>Quick Links</h4><a href="index.html#shop">All products</a><a href="about.html">About us</a><a href="contact.html">Contact us</a><a href="wishlist.html">Wishlist</a><a href="cart.html">Cart</a></div>
+<div><h4>Contact Us</h4><a class="fc" href="https://maps.google.com/?q=${encodeURIComponent(CONFIG.ADDRESS)}" target="_blank" rel="noopener">${ic('pin')}<span>${esc(CONFIG.ADDRESS)}</span></a><a class="fc" href="tel:${esc(CONFIG.PHONE.replace(/\s/g,''))}">${ic('phone')}<span>${esc(CONFIG.PHONE)}</span></a><a class="fc" href="mailto:${esc(CONFIG.EMAIL)}">${ic('mail')}<span>${esc(CONFIG.EMAIL)}</span></a></div></div>
 <p class="wrap copy">© ${new Date().getFullYear()} ${B}. Cosmetic products for external use only. Please do a patch test before first use. <a class="adm" href="admin.html" aria-label="Admin sign in">${ic('lock')}</a></p></footer>`);
   document.body.insertAdjacentHTML('beforeend',`<a class="wa-float" href="https://wa.me/${CONFIG.WHATSAPP.replace(/\D/g,'')}?text=${encodeURIComponent('Hello '+CONFIG.BRAND+', I have a question.')}" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16.04 3C9.4 3 4 8.4 4 15.03c0 2.12.55 4.19 1.6 6.01L4 29l8.14-1.56a12.02 12.02 0 0 0 3.9.65h.01C22.68 28.09 28 22.69 28 16.06 28 9.4 22.68 3 16.04 3zm0 22.04h-.01c-1.2 0-2.37-.32-3.4-.93l-.24-.15-4.83.93.98-4.7-.16-.25a9.97 9.97 0 0 1-1.54-5.3c0-5.5 4.5-9.98 10.03-9.98 5.52 0 10.01 4.48 10.01 9.99 0 5.5-4.5 10.39-10.84 10.39zm5.5-7.46c-.3-.15-1.78-.88-2.05-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.95 1.18-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.14-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.49-.5-.68-.51h-.58c-.2 0-.53.08-.8.38-.28.3-1.05 1.02-1.05 2.5s1.08 2.9 1.23 3.1c.15.2 2.12 3.23 5.13 4.53.72.31 1.28.5 1.71.63.72.23 1.37.2 1.89.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.08-.12-.28-.2-.58-.35z"/></svg></a>`);
   $$('[data-free]').forEach(e=>e.textContent=inr(CONFIG.FREE_SHIP_ABOVE));
-  hydrateIcons();menuInit();searchInit();badges();railInit();fitBrand();
+  hydrateIcons();menuInit();searchInit();badges();railInit();annInit();ddInit();
 }
-/* Scale the big footer brand name so it always fits the screen width, whatever the name length. */
-function fitBrand(){const run=()=>{const e=$('.fbig'),s=e&&$('span',e);if(!s)return;
-    /* Glyph widths don't scale perfectly linearly (the font has an optical-size axis), so measure and correct a few times until it converges. */
-    const cs=getComputedStyle(e),avail=e.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);if(avail<=0)return;
-    let fs=60;e.style.fontSize=fs+'px';
-    for(let i=0;i<6;i++){const w=s.getBoundingClientRect().width;if(!w)return;const next=Math.min(336,fs*avail/w*.96);if(Math.abs(next-fs)<.5)break;fs=next;e.style.fontSize=fs+'px'}
-    if(s.getBoundingClientRect().width>avail)e.style.fontSize=(fs*avail/s.getBoundingClientRect().width*.96)+'px'};
-  /* Re-fit whenever the width or the webfont changes (the font often arrives after first paint, which changes the text width). */
-  run();addEventListener('resize',run);addEventListener('orientationchange',run);addEventListener('load',run);
-  if(window.ResizeObserver){let lw=0;new ResizeObserver(()=>{const w=$('.fbig').clientWidth;if(w!==lw){lw=w;run()}}).observe($('.fbig'))}
-  if(document.fonts){document.fonts.ready.then(run);document.fonts.addEventListener&&document.fonts.addEventListener('loadingdone',run);document.fonts.load('300 100px Fraunces').then(run).catch(()=>{})}}
+/* Rotating announcement bar */
+function annInit(){const m=ANN(),t=$('#annT');let i=0,tm;const show=()=>{t.textContent=m[i]},go=d=>{i=(i+d+m.length)%m.length;show();clearInterval(tm);tm=setInterval(()=>go(1),5000)};
+  show();document.addEventListener('click',e=>{const b=e.target.closest('[data-ann]');if(b)go(+b.dataset.ann)});tm=setInterval(()=>go(1),5000)}
+/* "Shop" dropdown (hover/focus on desktop, tap to toggle on touch) */
+function ddInit(){const d=$('#dd');if(!d)return;const b=$('.ddb',d),set=o=>{d.classList.toggle('open',o);b.setAttribute('aria-expanded',o)};
+  b.addEventListener('click',()=>set(!d.classList.contains('open')));
+  document.addEventListener('click',e=>{if(!d.contains(e.target))set(false)});document.addEventListener('keydown',e=>{if(e.key==='Escape')set(false)})}
 function railInit(){document.addEventListener('click',e=>{const b=e.target.closest('[data-rail]');if(!b)return;const r=$('#recProducts');if(r)r.scrollBy({left:+b.dataset.rail*Math.min(r.clientWidth*.8,640),behavior:'smooth'})})}
 /* Mobile menu: lives OUTSIDE <header>, because a fixed element inside a backdrop-filter parent is positioned against that parent, not the screen. */
 function menuInit(){const m=$('#mnav'),b=$('#menuBtn'),s=$('#scrim');let last;
@@ -125,13 +129,15 @@ function badges(){const n=getCart().reduce((s,i)=>s+(i.qty||1),0),w=getWish().le
 async function loadProducts(){
   let rows=null;
   if(CONFIG.SHEET_API_URL){try{const r=await fetch(CONFIG.SHEET_API_URL);const d=await r.json();if(Array.isArray(d)&&d.length)rows=d}catch(e){console.error('Sheet load failed, using demo data',e)}}
-  const list=(rows||DEMO).map(norm);write('lastCount',list.length);return list}
+  const list=(rows||DEMO).map(norm);write('lastCount',list.length);write('cats',[...new Set(list.map(p=>p.category))]);return list}
 
 /* ================= CARDS ================= */
-function card(p){const off=p.mrp?Math.round(100-p.price/p.mrp*100):0,w=getWish().some(x=>x.id===p.id);const id=esc(p.id);
-  return `<article class="card"><div class="pimgw"><div class="pimg" data-view="${id}"><img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy" onerror="this.classList.add('bad')"></div>${p.recommended?'<span class="tag">Our pick</span>':''}<button class="ib wish" type="button" data-wish="${id}" aria-pressed="${w}" aria-label="${w?'Remove':'Add'} ${esc(p.name)} ${w?'from':'to'} wishlist">${ic('heart')}</button></div>
-<div class="cbody"><span class="cat-l">${esc(p.category)}</span><h3 data-view="${id}">${esc(p.name)}</h3>
-<div class="prow"><div class="price"><span>${inr(p.price)}</span>${p.mrp?`<s>${inr(p.mrp)}</s><small>${off}% off</small>`:''}</div><button class="addb" type="button" data-add="${id}" aria-label="${p.sizes.length?'Choose size for':'Add to cart:'} ${esc(p.name)}">${ic('plus')}</button></div></div></article>`}
+const pHref=p=>'product.html?id='+encodeURIComponent(p.id);
+function card(p){const off=p.mrp?Math.round(100-p.price/p.mrp*100):0,w=getWish().some(x=>x.id===p.id);const id=esc(p.id),href=esc(pHref(p));
+  return `<article class="card"><div class="pimgw"><a class="pimg" href="${href}" tabindex="-1" aria-hidden="true"><img src="${esc(p.image)}" alt="" loading="lazy" onerror="this.classList.add('bad')"></a>${off?`<span class="tag">${off}% off</span>`:''}<button class="ib wish" type="button" data-wish="${id}" aria-pressed="${w}" aria-label="${w?'Remove':'Add'} ${esc(p.name)} ${w?'from':'to'} wishlist">${ic('heart')}</button></div>
+<div class="cbody"><span class="cat-l">${esc(p.category)}</span><h3><a href="${href}">${esc(p.name)}</a></h3>
+<div class="price">${p.mrp?`<s>${inr(p.mrp)}</s>`:''}<span>${inr(p.price)}</span></div>
+${p.sizes.length?`<a class="addb" href="${href}">Choose options</a>`:`<button class="addb" type="button" data-add="${id}" aria-label="Add ${esc(p.name)} to cart">Add to cart</button>`}</div></article>`}
 const skeletons=n=>Array.from({length:n},()=>'<div class="skel" aria-hidden="true"></div>').join('');
 
 /* ================= CART / WISHLIST ACTIONS ================= */
@@ -156,51 +162,63 @@ function parseDesc(raw){
     else if(intro.length&&c.length<=48&&!/[.!?:]$/.test(c)){feats.push({t:c,d:''});open=null}
     else intro.push(c)}));
   return{intro,feats}}
-function fmtDesc(raw){
-  const {intro,feats}=parseDesc(raw);
-  if(!intro.length&&!feats.length)return{html:'<p class="lede">Handmade beauty care product.</p>',long:false};
-  const fh=feats.map(f=>`<li><div>${f.t&&f.d?`<b>${esc(f.t)}</b><span>${esc(f.d)}</span>`:`<span style="color:var(--ink)">${esc(f.t||f.d)}</span>`}</div></li>`).join('');
-  const html=intro.map((x,i)=>`<p${i?'':' class="lede"'}>${esc(x)}</p>`).join('')+(fh?`<ul class="mfeat">${fh}</ul>`:'');
-  return{html,long:(intro.join(' ').length+feats.map(f=>f.t+f.d).join(' ').length)>380}}
-
-function quick(p){let m=$('#modal');if(!m){m=document.createElement('div');m.id='modal';m.className='modal';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-labelledby','mT');document.body.appendChild(m)}
-  const last=document.activeElement,off=p.mrp?Math.round(100-p.price/p.mrp*100):0,imgs=p.images.length?p.images:[''],d=fmtDesc(p.description),inWish=()=>getWish().some(x=>x.id===p.id);
+/* ================= PRODUCT PAGE ================= */
+const listHtml=t=>{const l=String(t||'').split(/\r?\n|\|/).map(x=>x.replace(/^[*•\-–—·▪●\d.)\s]+/,'').trim()).filter(Boolean);
+  return l.length>1?`<ul>${l.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:l.length?`<p>${esc(l[0])}</p>`:''};
+const acc=(t,body,open)=>body?`<details class="acc"${open?' open':''}><summary>${ic('check-square')}${t}${ic('chevron-down').replace('class="i"','class="i chev"')}</summary><div class="accb">${body}</div></details>`:'';
+async function initProduct(){
+  const box=$('#pBox'),id=new URLSearchParams(location.search).get('id');
+  box.innerHTML='<div class="wrap pp"><div class="skel" style="height:520px"></div><div class="skel" style="height:420px"></div></div>';
+  ALL=await loadProducts();const p=ALL.find(x=>x.id===id);
+  if(!p){document.title='Product not found | '+CONFIG.BRAND;box.innerHTML='<div class="wrap sec"><div class="empty"><h3>We couldn’t find that product</h3><p>It may have been removed or the link is out of date.</p><a class="btn" href="index.html#shop">Browse all products</a></div></div>';return}
+  renderProduct(p)}
+function renderProduct(p){
+  document.title=`${p.name} | ${CONFIG.BRAND}`;
+  const off=p.mrp?Math.round(100-p.price/p.mrp*100):0,imgs=p.images.length?p.images:[p.image],href=location.href,B=esc(CONFIG.BRAND);
+  const {intro,feats}=parseDesc(p.description),inWish=()=>getWish().some(x=>x.id===p.id);
   let size=p.sizes[0]||'',qty=1;
-  m.innerHTML=`<div class="mbox"><div class="xw"><button class="ib x" type="button" aria-label="Close">${ic('x')}</button></div><div class="grab" aria-hidden="true"><span></span></div>
-<div class="mgal"><div class="mmain" id="mMain"><img src="${esc(imgs[0])}" alt="${esc(p.name)}" onerror="this.classList.add('bad')">${off?`<span class="mbadge">${off}% off</span>`:''}<button class="ib mwish" id="mWish" type="button" aria-pressed="${inWish()}" aria-label="Save to wishlist">${ic('heart')}</button></div>${imgs.length>1?`<div class="thumbs">${imgs.map((u,i)=>`<button type="button" class="th" data-u="${esc(u)}" aria-pressed="${i===0}" aria-label="Show image ${i+1}"><img src="${esc(u)}" alt="" onerror="this.classList.add('bad')"></button>`).join('')}</div>`:''}</div>
-<div class="minfo"><div class="mscroll"><span class="mcat">${esc(p.category)}</span><h2 id="mT">${esc(p.name)}</h2>
-<div class="mprice"><b>${inr(p.price)}</b>${p.mrp?`<s>${inr(p.mrp)}</s><small>${off}% off</small>`:''}</div>
-<div class="mdesc${d.long?' clip':''}" id="mDesc">${d.html}</div>${d.long?('<button class="more" type="button" id="mMore" aria-expanded="false">Read more'+ic('chevron-down')+'</button>'):''}
-${p.sizes.length?`<p class="mlabel">Size</p><div class="sizes" role="group" aria-label="Size">${p.sizes.map((z,i)=>`<button type="button" class="chip" data-size="${esc(z)}" aria-pressed="${i===0}">${esc(z)}</button>`).join('')}</div>`:''}
-<div class="mperks"><div>${ic('truck')}Free delivery above ${inr(CONFIG.FREE_SHIP_ABOVE)}</div><div>${ic('mortar')}Made in small batches</div><div>${ic('box')}Glass and paper, plastic-light packing</div></div>
-<a class="mask" target="_blank" rel="noopener" href="https://wa.me/${esc(CONFIG.WHATSAPP)}?text=${encodeURIComponent('Hello, I have a question about '+p.name)}">${ic('chat')}Have a question? Ask us on WhatsApp</a></div>
-<div class="mfoot"><div class="qty" role="group" aria-label="Quantity"><button type="button" data-q="-1" aria-label="Decrease quantity">−</button><span id="mQty" aria-live="polite">1</span><button type="button" data-q="1" aria-label="Increase quantity">+</button></div><button class="btn" type="button" id="mAdd">${ic('bag')}<span id="mAddT"></span></button></div></div></div>`;
-  const sync=()=>{$('#mQty',m).textContent=qty;$('#mAddT',m).textContent='Add to cart · '+inr(p.price*qty)};sync();
-  m.hidden=false;m.scrollTop=0;document.documentElement.classList.add('lock');
-  const close=()=>{m.hidden=true;document.documentElement.classList.remove('lock');document.removeEventListener('keydown',esc_);last&&last.focus&&last.focus()},esc_=e=>{if(e.key==='Escape')close()};
-  document.addEventListener('keydown',esc_);
-  m.onclick=e=>{if(e.target===m||e.target.closest('.x'))return close();
-    const th=e.target.closest('.th');if(th){const im=$('#mMain img',m);im.src=th.dataset.u;im.classList.remove('bad');$$('.th',m).forEach(b=>b.setAttribute('aria-pressed',b===th))}
-    const z=e.target.closest('[data-size]');if(z){size=z.dataset.size;$$('[data-size]',m).forEach(b=>b.setAttribute('aria-pressed',b===z))}
+  const bullets=feats.map(f=>f.t&&f.d?`<li><b>${esc(f.t)}:</b> <span>${esc(f.d)}</span></li>`:`<li><span>${esc(f.t||f.d)}</span></li>`).join('');
+  const descBody=intro.map(x=>`<p>${esc(x)}</p>`).join('')||(bullets?'':'<p>Handmade beauty care product.</p>');
+  const others=ALL.filter(x=>x.id!==p.id),rel=[...others.filter(x=>x.category===p.category),...others.filter(x=>x.category!==p.category)].slice(0,4);
+  rel.forEach(x=>REG[x.id]=x);
+  const faq=[['Is there free delivery?',`Yes, on orders above ${inr(CONFIG.FREE_SHIP_ABOVE)}. Below that, delivery is ${inr(CONFIG.SHIPPING)}.`],['How can I pay?','You can pay by cash on delivery or by UPI at checkout.'],['Do I need to do a patch test?','Yes. Our cosmetic products are for external use only, so please do a patch test before first use.'],['Can I ask a question before I buy?',`Of course. Message us on WhatsApp (${esc(CONFIG.WHATSAPP)}) or call ${esc(CONFIG.PHONE)} and we’ll help you choose.`]];
+  $('#pBox').innerHTML=`<nav class="wrap crumbs" aria-label="Breadcrumb"><a href="index.html">Home</a><span aria-hidden="true">/</span><a href="${esc(catHref(p.category))}">${esc(p.category)}</a><span aria-hidden="true">/</span><span aria-current="page">${esc(p.name)}</span></nav>
+<section class="wrap pp"><div class="pgal"><div class="pmain" id="pMain"><img src="${esc(imgs[0])}" alt="${esc(p.name)}" onerror="this.classList.add('bad')"></div>
+${imgs.length>1?`<div class="pgrid">${imgs.map((u,i)=>`<button class="pth" type="button" data-u="${esc(u)}" aria-pressed="${i===0}" aria-label="Show image ${i+1} of ${imgs.length}"><img src="${esc(u)}" alt="" loading="lazy" onerror="this.classList.add('bad')"></button>`).join('')}</div>`:''}</div>
+<div class="pinfo"><p class="pvendor">${B}</p><h1>${esc(p.name)}</h1>
+<div class="pprice">${p.mrp?`<s>${inr(p.mrp)}</s>`:''}<b>${inr(p.price)}</b>${off?`<span class="pill">${off}% off</span>`:''}</div>
+<p class="pnote">Delivery ${inr(CONFIG.SHIPPING)}, free above ${inr(CONFIG.FREE_SHIP_ABOVE)}.</p>
+${p.sizes.length?`<fieldset class="pfs"><legend>Size</legend><div class="sizes">${p.sizes.map((z,i)=>`<button type="button" class="chip" data-size="${esc(z)}" aria-pressed="${i===0}">${esc(z)}</button>`).join('')}</div></fieldset>`:''}
+<div class="pfs"><span class="plabel" id="qL">Quantity</span><div class="qty" role="group" aria-labelledby="qL"><button type="button" data-q="-1" aria-label="Decrease quantity">${ic('minus')}</button><span id="pQty" aria-live="polite">1</span><button type="button" data-q="1" aria-label="Increase quantity">${ic('plus')}</button></div></div>
+<div class="pbtns"><button class="btn green block" type="button" id="pAdd">Add to cart</button><button class="btn green block" type="button" id="pBuy">Buy it now</button><button class="btn ghost block" type="button" id="pWish" aria-pressed="${inWish()}">${ic('heart')}<span></span></button></div>
+<ul class="offers"><li>${ic('check-circle')}Free delivery on orders above ${inr(CONFIG.FREE_SHIP_ABOVE)}</li><li>${ic('check-circle')}Cash on delivery &amp; UPI accepted</li><li>${ic('check-circle')}Made in small batches</li></ul>
+<div class="perks"><div>${ic('truck')}Free delivery above ${inr(CONFIG.FREE_SHIP_ABOVE)}</div><div>${ic('card')}Cash on delivery &amp; UPI</div><div>${ic('chat')}Ask us on WhatsApp</div></div>
+${bullets?`<ul class="pbul">${bullets}</ul>`:''}
+${acc('Description',descBody,!bullets)}${acc('Benefits',listHtml(p.benefits))}${acc('Ingredients',listHtml(p.ingredients))}${acc('How to use',listHtml(p.usage))}
+${acc('Delivery &amp; payment',`<p>Free delivery on orders above <b>${inr(CONFIG.FREE_SHIP_ABOVE)}</b>; otherwise ${inr(CONFIG.SHIPPING)}.</p><p>Pay by cash on delivery or UPI.</p>`)}
+${acc('Good to know','<p>Cosmetic products for external use only. Please do a patch test before first use.</p>')}
+${acc('Seller info',`<p><b>${B}</b><br>${esc(CONFIG.ADDRESS)}</p><p><a href="tel:${esc(CONFIG.PHONE.replace(/\s/g,''))}">${esc(CONFIG.PHONE)}</a> · <a href="mailto:${esc(CONFIG.EMAIL)}">${esc(CONFIG.EMAIL)}</a></p><p><a target="_blank" rel="noopener" href="https://wa.me/${esc(CONFIG.WHATSAPP.replace(/\D/g,''))}?text=${encodeURIComponent('Hello, I have a question about '+p.name)}">Ask about this product on WhatsApp</a></p>`)}
+</div></section>
+${rel.length?`<section class="wrap blk"><div class="sechead"><h2>You may also like</h2></div><div class="products" style="margin-top:0">${rel.map(card).join('')}</div></section>`:''}
+<section class="wrap blk"><div class="faq"><h2>FAQ</h2>${faq.map(f=>`<details class="acc"><summary>${ic('check-square')}${f[0]}${ic('chevron-down').replace('class="i"','class="i chev"')}</summary><div class="accb"><p>${f[1]}</p></div></details>`).join('')}</div></section>`;
+  const root=$('#pBox'),sync=()=>{$('#pQty').textContent=qty;const w=inWish(),b=$('#pWish');b.setAttribute('aria-pressed',w);b.querySelector('span').textContent=w?'Saved to wishlist':'Save to wishlist';b.querySelector('.i').style.fill=w?'currentColor':'none'};sync();
+  root.addEventListener('click',e=>{
+    const th=e.target.closest('.pth');if(th){const im=$('#pMain img');im.src=th.dataset.u;im.classList.remove('bad');$$('.pth',root).forEach(b=>b.setAttribute('aria-pressed',b===th));$('#pMain').scrollIntoView({block:'nearest',behavior:'smooth'})}
+    const z=e.target.closest('[data-size]');if(z){size=z.dataset.size;$$('[data-size]',root).forEach(b=>b.setAttribute('aria-pressed',b===z))}
     const q=e.target.closest('[data-q]');if(q){qty=Math.max(1,Math.min(10,qty+ +q.dataset.q));sync()}
-    if(e.target.closest('#mMore')){const b=$('#mMore',m),c=$('#mDesc',m).classList.toggle('clip');b.setAttribute('aria-expanded',!c);b.firstChild.textContent=c?'Read more':'Show less';b.classList.toggle('open',!c)}};
-  /* swipe the handle down to dismiss (mobile sheet) */
-  const g=$('.grab',m),bx=$('.mbox',m);let y0=0,dy=0;
-  g.addEventListener('touchstart',e=>{y0=e.touches[0].clientY;dy=0;bx.style.transition='none'},{passive:true});
-  g.addEventListener('touchmove',e=>{dy=Math.max(0,e.touches[0].clientY-y0);bx.style.transform=`translateY(${dy}px)`},{passive:true});
-  g.addEventListener('touchend',()=>{bx.style.transition='';bx.style.transform='';if(dy>90)close()});
-  $('#mAdd',m).onclick=()=>{addToCart(p,qty,size);close()};
-  $('#mWish',m).onclick=()=>{toggleWish(p);$('#mWish',m).setAttribute('aria-pressed',inWish());refresh()};$('.x',m).focus()}
+    if(e.target.closest('#pAdd'))addToCart(p,qty,size);
+    if(e.target.closest('#pBuy')){addToCart(p,qty,size);location.href='checkout.html'}
+    if(e.target.closest('#pWish')){toggleWish(p);sync()}});
+}
 
 /* One click handler for every page */
-document.addEventListener('click',e=>{const t=e.target.closest('[data-add],[data-wish],[data-view],[data-inc],[data-dec],[data-rm],[data-cat]');if(!t)return;const d=t.dataset;
-  if(d.add){const p=REG[d.add];p.sizes.length?quick(p):addToCart(p)}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-add],[data-wish],[data-inc],[data-dec],[data-rm],[data-cat]');if(!t)return;const d=t.dataset;
+  if(d.add){const p=REG[d.add];p.sizes.length?location.href=pHref(p):addToCart(p)}
   else if(d.wish){toggleWish(REG[d.wish]||getWish().find(x=>x.id===d.wish));refresh()}
-  else if(d.view)quick(REG[d.view]);
   else if(d.inc)setQty(d.inc,1);else if(d.dec)setQty(d.dec,-1);
   else if(d.rm){write('cart',getCart().filter(x=>x.key!==d.rm));badges();renderCart()}
   else if(d.cat!==undefined){state.cat=d.cat;renderShop()}});
-function refresh(){if(PAGE==='home')renderShop(true);else if(PAGE==='wishlist')renderWish()}
+function refresh(){if(PAGE==='home')renderShop(true);else if(PAGE==='wishlist')renderWish();else if(PAGE==='product')$$('.card [data-wish]').forEach(b=>{const w=getWish().some(x=>x.id===b.dataset.wish);b.setAttribute('aria-pressed',w)})}
 
 /* ================= HOME: recommended + all products + filters + search ================= */
 const state={cat:'',q:''};let ALL=[];
@@ -216,7 +234,8 @@ function renderShop(keepScroll){
 async function initHome(){
   $('#recProducts').innerHTML=skeletons(3);$('#allProducts').innerHTML=skeletons(Math.min(8,read('lastCount',4)));
   $('#heroImg').style.setProperty('--img',`url(${HERO})`);$('#heroImg2').style.setProperty('--img',`url(${HERO2})`);
-  ALL=await loadProducts();renderShop();
+  const c0=new URLSearchParams(location.search).get('cat');if(c0)state.cat=c0;
+  ALL=await loadProducts();if(state.cat&&!ALL.some(p=>p.category===state.cat))state.cat='';renderShop();
   if(!ALL.length)$('#allProducts').innerHTML='<div class="empty"><h3>No products yet</h3><p>Check back soon.</p></div>'}
 
 /* ================= CART PAGE ================= */
@@ -271,4 +290,4 @@ function initCheckout(){const c=getCart(),box=$('#coBox');
 /* ================= BOOT ================= */
 chrome();
 window.addEventListener('storage',badges);
-if(PAGE==='home')initHome();if(PAGE==='cart')renderCart();if(PAGE==='wishlist')renderWish();if(PAGE==='contact')initContact();if(PAGE==='checkout')initCheckout();
+if(PAGE==='home')initHome();if(PAGE==='product')initProduct();if(PAGE==='cart')renderCart();if(PAGE==='wishlist')renderWish();if(PAGE==='contact')initContact();if(PAGE==='checkout')initCheckout();
