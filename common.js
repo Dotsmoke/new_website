@@ -4,7 +4,7 @@ const CONFIG={
   /* Paste your deployed Google Apps Script web-app URL here (see Code.gs). Leave '' to use the demo products below. */
   SHEET_API_URL:'https://script.google.com/macros/s/AKfycbyBgmzVonv_nLV0DNvo4m2SKXk_m2vvXRGjT-flDKkTAipVr_KJzdp567lnbb64iDOR/exec',
   BRAND:'Athulya Beauty Parlour',FREE_SHIP_ABOVE:999,SHIPPING:60,
-  UPI_ID:'yourname@upi',EMAIL:'hello@example.com',PHONE:'+91 8590960947',WHATSAPP:'+91 7034016193',ADDRESS:'Near UP School Kaniyambetta ,Wayanad , Kerala, India, PIN : 673122'};
+  UPI_ID:'yourname@upi',EMAIL:'snsinternationalrootora.1@gmail.com',PHONE:'+91 8590960947',WHATSAPP:'+91 7034016193',ADDRESS:'Near UP School Kaniyambetta ,Wayanad , Kerala, India, PIN : 673122'};
 /* Demo products, used only when SHEET_API_URL is empty or fails. Sheet columns: id, name, price, mrp, image, category, description, Recommended */
 const U=id=>`https://images.unsplash.com/${id}?auto=format&fit=crop&w=800&q=70`;
 const DEMO=[
