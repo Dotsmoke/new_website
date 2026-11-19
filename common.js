@@ -4,7 +4,7 @@ const CONFIG={
   /* Paste your deployed Google Apps Script web-app URL here (see Code.gs). Leave '' to use the demo products below. */
   SHEET_API_URL:'https://script.google.com/macros/s/AKfycbyBgmzVonv_nLV0DNvo4m2SKXk_m2vvXRGjT-flDKkTAipVr_KJzdp567lnbb64iDOR/exec',
   BRAND:'Athulya Beauty Parlour',FREE_SHIP_ABOVE:999,SHIPPING:60,
-  UPI_ID:'yourname@upi',EMAIL:'snsinternationalrootora.1@gmail.com',PHONE:'+91 8590960947',WHATSAPP:'+91 7034016193',ADDRESS:'Near UP School Kaniyambetta ,Wayanad , Kerala, India, PIN : 673122'};
+  UPI_ID:'yourname@upi',EMAIL:'hello@example.com',PHONE:'+91 8590960947',WHATSAPP:'+91 7034016193',ADDRESS:'Near UP School Kaniyambetta ,Wayanad , Kerala, India, PIN : 673122'};
 /* Demo products, used only when SHEET_API_URL is empty or fails. Sheet columns: id, name, price, mrp, image, category, description, Recommended */
 const U=id=>`https://images.unsplash.com/${id}?auto=format&fit=crop&w=800&q=70`;
 const DEMO=[
@@ -183,8 +183,10 @@ function renderProduct(p){
   rel.forEach(x=>REG[x.id]=x);
   const faq=[['Is there free delivery?',`Yes, on orders above ${inr(CONFIG.FREE_SHIP_ABOVE)}. Below that, delivery is ${inr(CONFIG.SHIPPING)}.`],['How can I pay?','You can pay by cash on delivery or by UPI at checkout.'],['Do I need to do a patch test?','Yes. Our cosmetic products are for external use only, so please do a patch test before first use.'],['Can I ask a question before I buy?',`Of course. Message us on WhatsApp (${esc(CONFIG.WHATSAPP)}) or call ${esc(CONFIG.PHONE)} and we’ll help you choose.`]];
   $('#pBox').innerHTML=`<nav class="wrap crumbs" aria-label="Breadcrumb"><a href="index.html">Home</a><span aria-hidden="true">/</span><a href="${esc(catHref(p.category))}">${esc(p.category)}</a><span aria-hidden="true">/</span><span aria-current="page">${esc(p.name)}</span></nav>
-<section class="wrap pp"><div class="pgal"><div class="pmain" id="pMain"><img src="${esc(imgs[0])}" alt="${esc(p.name)}" onerror="this.classList.add('bad')"></div>
+<section class="wrap pp"><div class="pgal"><div class="pdesk"><div class="pmain" id="pMain"><img src="${esc(imgs[0])}" alt="${esc(p.name)}" onerror="this.classList.add('bad')"></div>
 ${imgs.length>1?`<div class="pgrid">${imgs.map((u,i)=>`<button class="pth" type="button" data-u="${esc(u)}" aria-pressed="${i===0}" aria-label="Show image ${i+1} of ${imgs.length}"><img src="${esc(u)}" alt="" loading="lazy" onerror="this.classList.add('bad')"></button>`).join('')}</div>`:''}</div>
+<div class="pcar" role="region" aria-roledescription="carousel" aria-label="Product images"><div class="ptrack" id="pTrack">${imgs.map((u,i)=>`<div class="pslide" role="group" aria-label="Image ${i+1} of ${imgs.length}"><img src="${esc(u)}" alt="${esc(p.name)}${imgs.length>1?' – image '+(i+1):''}"${i?' loading="lazy"':''} onerror="this.classList.add('bad')"></div>`).join('')}</div>
+${imgs.length>1?`<div class="pctl"><button type="button" class="pnav" data-slide="-1" aria-label="Previous image">${ic('chevron-left')}</button><span class="pcount" id="pCount" aria-live="polite">1 / ${imgs.length}</span><button type="button" class="pnav" data-slide="1" aria-label="Next image">${ic('chevron-right')}</button></div>`:''}</div></div>
 <div class="pinfo"><p class="pvendor">${B}</p><h1>${esc(p.name)}</h1>
 <div class="pprice">${p.mrp?`<s>${inr(p.mrp)}</s>`:''}<b>${inr(p.price)}</b>${off?`<span class="pill">${off}% off</span>`:''}</div>
 <p class="pnote">Delivery ${inr(CONFIG.SHIPPING)}, free above ${inr(CONFIG.FREE_SHIP_ABOVE)}.</p>
@@ -202,8 +204,10 @@ ${acc('Seller info',`<p><b>${B}</b><br>${esc(CONFIG.ADDRESS)}</p><p><a href="tel
 ${rel.length?`<section class="wrap blk"><div class="sechead"><h2>You may also like</h2></div><div class="products" style="margin-top:0">${rel.map(card).join('')}</div></section>`:''}
 <section class="wrap blk"><div class="faq"><h2>FAQ</h2>${faq.map(f=>`<details class="acc"><summary>${ic('check-square')}${f[0]}${ic('chevron-down').replace('class="i"','class="i chev"')}</summary><div class="accb"><p>${f[1]}</p></div></details>`).join('')}</div></section>`;
   const root=$('#pBox'),sync=()=>{$('#pQty').textContent=qty;const w=inWish(),b=$('#pWish');b.setAttribute('aria-pressed',w);b.querySelector('span').textContent=w?'Saved to wishlist':'Save to wishlist';b.querySelector('.i').style.fill=w?'currentColor':'none'};sync();
+  const trk=$('#pTrack'),cnt=$('#pCount');if(trk&&cnt){let raf;trk.addEventListener('scroll',()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const n=Math.round(trk.scrollLeft/trk.clientWidth)+1;cnt.textContent=`${Math.min(n,imgs.length)} / ${imgs.length}`})},{passive:true})}
   root.addEventListener('click',e=>{
     const th=e.target.closest('.pth');if(th){const im=$('#pMain img');im.src=th.dataset.u;im.classList.remove('bad');$$('.pth',root).forEach(b=>b.setAttribute('aria-pressed',b===th));$('#pMain').scrollIntoView({block:'nearest',behavior:'smooth'})}
+    const sl=e.target.closest('[data-slide]');if(sl){const t=$('#pTrack');t.scrollBy({left:+sl.dataset.slide*t.clientWidth,behavior:'smooth'})}
     const z=e.target.closest('[data-size]');if(z){size=z.dataset.size;$$('[data-size]',root).forEach(b=>b.setAttribute('aria-pressed',b===z))}
     const q=e.target.closest('[data-q]');if(q){qty=Math.max(1,Math.min(10,qty+ +q.dataset.q));sync()}
     if(e.target.closest('#pAdd'))addToCart(p,qty,size);
